@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vetaris | Hayvansal Destek Ürünleri</title>
     <meta name="description" content="Evcil hayvanlarınız için premium sağlık ve destek ürünleri.">
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
-    
+
     <!-- Favicon (Optional placeholder) -->
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
+
 <body>
 
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="/" class="logo">Vetaris<span>.</span></a>
+            <a href="/" class="logo">
+                <img src="/images/logo.jpg" alt="Vetaris Logo" style="height: 40px; vertical-align: middle;">
+            </a>
             <div class="nav-links">
                 <a href="#">Ana Sayfa</a>
                 <a href="#products">Ürünler</a>
@@ -34,7 +38,8 @@
     <section class="hero">
         <div class="container">
             <h1>Dostlarınız İçin<br>En İyi Destek</h1>
-            <p>Bilimsel formüllerle geliştirilen, veteriner onaylı destek ürünleri ile onların mutluluğuna ortak olun.</p>
+            <p>Bilimsel formüllerle geliştirilen, veteriner onaylı destek ürünleri ile onların mutluluğuna ortak olun.
+            </p>
             <a href="#products" class="btn-primary">Ürünleri Keşfet</a>
         </div>
     </section>
@@ -55,8 +60,28 @@
         </div>
     </footer>
 
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-body">
+                <img id="modal-image" src="" alt="Ürün Resmi" class="modal-image">
+                <div class="modal-text">
+                    <h2 id="modal-title"></h2>
+                    <span id="modal-category" class="product-category"></span>
+                    <p id="modal-desc"></p>
+                    <div class="product-footer">
+                        <span id="modal-price" class="product-price"></span>
+                        <button id="modal-add-btn" class="btn-primary">Sepete Ekle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="app.js"></script>
 
 </body>
+
 </html>

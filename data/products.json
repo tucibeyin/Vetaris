@@ -1,34 +1,26 @@
 [
-  {
-    "id": 1,
-    "name": "Vetaris Eklem Destek Tabletleri",
-    "price": 250.00,
-    "image": "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=800",
-    "description": "Köpekler ve kediler için glukozamin destekli eklem sağlığı tabletleri. Hareket kabiliyetini artırır.",
-    "category": "Eklem Sağlığı"
-  },
-  {
-    "id": 2,
-    "name": "Vetaris Parlak Tüy Yağı",
-    "price": 180.50,
-    "image": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=800",
-    "description": "Omega-3 ve Omega-6 zengini balık yağı. Tüylerin parlak ve sağlıklı olmasını sağlar.",
-    "category": "Deri ve Tüy"
-  },
-  {
-    "id": 3,
-    "name": "Vetaris Multivitamin Pro",
-    "price": 320.00,
-    "image": "https://images.unsplash.com/photo-1587300003388-59208cc962cb?auto=format&fit=crop&q=80&w=800",
-    "description": "Günlük enerji ve bağışıklık sistemi desteği için kapsamlı vitamin kompleksi.",
-    "category": "Vitaminler"
-  },
-  {
-    "id": 4,
-    "name": "Vetaris Sakinleştirici Damla",
-    "price": 150.00,
-    "image": "https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&q=80&w=800",
-    "description": "Stresli durumlarda (yolculuk, veteriner) evcil hayvanınızı rahatlatan bitkisel damla.",
-    "category": "Davranış"
-  }
+    {
+        "id": 1,
+        "name": "Vetaris Formül A",
+        "price": 350.00,
+        "image": "/images/formula-a.png",
+        "description": "Evcil hayvanınızın günlük vitamin ve mineral ihtiyacını karşılayan premium destek formülü.",
+        "category": "Genel Sağlık"
+    },
+    {
+        "id": 2,
+        "name": "Vetaris Formül B",
+        "price": 350.00,
+        "image": "/images/formula-b.png",
+        "description": "Eklem sağlığı ve hareketlilik desteği için özel olarak geliştirilmiş gelişmiş formül.",
+        "category": "Eklem Desteği"
+    },
+    {
+        "id": 3,
+        "name": "Vetaris Bakım Spreyi",
+        "price": 180.00,
+        "image": "/images/spray.png",
+        "description": "Deri ve tüy sağlığını koruyan, parlaklık veren ve ferahlık sağlayan özel bakım spreyi.",
+        "category": "Bakım Ürünleri"
+    }
 ]
