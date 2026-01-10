@@ -4,7 +4,7 @@ import json
 import os
 import mimetypes
 
-PORT = 8000
+PORT = 8801
 DIRECTORY = "public"
 
 class VetarisHandler(http.server.SimpleHTTPRequestHandler):
