@@ -105,3 +105,13 @@ function openModal(product) {
     void modal.offsetWidth;
     modal.classList.add('active');
 }
+
+// Mobile Menu Logic
+const hamburger = document.querySelector('.hamburger-menu');
+const navLinks = document.querySelector('.nav-links');
+
+if (hamburger) {
+    hamburger.onclick = () => {
+        navLinks.classList.toggle('active');
+    };
+}
