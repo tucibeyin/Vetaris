@@ -146,43 +146,52 @@ function updateNavAuth(isAuthenticated, email) {
     if (!navLinks) return;
 
     // Remove existing auth items if any
-    const existingAuthItems = navLinks.querySelectorAll('.auth-item');
+    const existingAuthItems = navLinks.querySelectorAll('.auth-item-container');
     existingAuthItems.forEach(item => item.remove());
+    // Also cleanup old individual items if any persist from cache/previous load
+    const oldItems = navLinks.querySelectorAll('.auth-item');
+    oldItems.forEach(item => item.remove());
+
+    // Create container for auth items to control positioning
+    const authContainer = document.createElement('div');
+    authContainer.className = 'auth-item-container auth-btn-group-start';
 
     if (isAuthenticated) {
         // My Account Link
         const accountLink = document.createElement('a');
-        accountLink.href = '#'; // Placeholder for account page
-        accountLink.className = 'auth-item';
+        accountLink.href = '#';
+        accountLink.className = 'btn-auth-login';
         accountLink.innerText = 'Hesabım';
         accountLink.onclick = (e) => {
             e.preventDefault();
             alert('Hesabım sayfası yapım aşamasında.');
         };
-        navLinks.appendChild(accountLink);
+        authContainer.appendChild(accountLink);
 
         // Logout Link
         const logoutLink = document.createElement('a');
         logoutLink.href = '#';
-        logoutLink.className = 'auth-item'; // Helper class to remove them later
+        logoutLink.className = 'btn-auth-logout';
         logoutLink.innerText = 'Çıkış Yap';
         logoutLink.onclick = handleLogout;
-        navLinks.appendChild(logoutLink);
+        authContainer.appendChild(logoutLink);
     } else {
         // Login Link
         const loginLink = document.createElement('a');
         loginLink.href = 'login.html';
-        loginLink.className = 'auth-item';
+        loginLink.className = 'btn-auth-login';
         loginLink.innerText = 'Giriş Yap';
-        navLinks.appendChild(loginLink);
+        authContainer.appendChild(loginLink);
 
         // Register Link
         const registerLink = document.createElement('a');
         registerLink.href = 'register.html';
-        registerLink.className = 'auth-item';
+        registerLink.className = 'btn-auth-register';
         registerLink.innerText = 'Kayıt Ol';
-        navLinks.appendChild(registerLink);
+        authContainer.appendChild(registerLink);
     }
+
+    navLinks.appendChild(authContainer);
 }
 
 async function handleLogin(e) {
