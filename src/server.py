@@ -3,30 +3,134 @@ import socketserver
 import json
 import os
 import mimetypes
+from http import cookies
+import database  # Import our database module
 
 PORT = 8801
 DIRECTORY = "public"
 
+# Initialize Database
+database.init_db()
+
+class ThreadingHTTPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
+
 class VetarisHandler(http.server.SimpleHTTPRequestHandler):
+    def parse_cookies(self):
+        if 'Cookie' in self.headers:
+            return cookies.SimpleCookie(self.headers['Cookie'])
+        return cookies.SimpleCookie()
+
+    def get_current_user(self):
+        cookie = self.parse_cookies()
+        if 'session_id' in cookie:
+            session_id = cookie['session_id'].value
+            return database.get_session(session_id)
+        return None
+
+    def send_json_response(self, data, status=200):
+        self.send_response(status)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode('utf-8'))
+
+    def do_POST(self):
+        # Parse content length
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length)
+        
+        try:
+            data = json.loads(post_data.decode('utf-8'))
+        except json.JSONDecodeError:
+            self.send_json_response({"error": "Invalid JSON"}, 400)
+            return
+
+        # Auth Endpoints
+        if self.path == '/api/auth/register':
+            email = data.get('email')
+            password = data.get('password')
+            
+            if not email or not password:
+                self.send_json_response({"error": "Email and password required"}, 400)
+                return
+
+            user_id = database.create_user(email, password)
+            if user_id:
+                self.send_json_response({"message": "User created successfully", "user_id": user_id})
+            else:
+                self.send_json_response({"error": "User already exists or error creating user"}, 409)
+            return
+
+        elif self.path == '/api/auth/login':
+            email = data.get('email')
+            password = data.get('password')
+
+            user = database.get_user_by_email(email)
+            if user and database.verify_password(user['password_hash'], password):
+                session_id = database.create_session(user['id'])
+                
+                # Set Cookie
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                
+                # HttpOnly cookie for security
+                cookie = cookies.SimpleCookie()
+                cookie['session_id'] = session_id
+                cookie['session_id']['path'] = '/'
+                cookie['session_id']['httponly'] = True
+                self.send_header('Set-Cookie', cookie.output(header=''))
+                
+                self.end_headers()
+                self.wfile.write(json.dumps({"message": "Login successful", "email": user['email']}).encode('utf-8'))
+            else:
+                self.send_json_response({"error": "Invalid credentials"}, 401)
+            return
+
+        elif self.path == '/api/auth/logout':
+            cookie = self.parse_cookies()
+            if 'session_id' in cookie:
+                database.delete_session(cookie['session_id'].value)
+            
+            # Clear cookie
+            self.send_response(200)
+            cookie = cookies.SimpleCookie()
+            cookie['session_id'] = ''
+            cookie['session_id']['path'] = '/'
+            cookie['session_id']['expires'] = 0
+            self.send_header('Set-Cookie', cookie.output(header=''))
+            self.end_headers()
+            self.wfile.write(json.dumps({"message": "Logged out"}).encode('utf-8'))
+            return
+
+        self.send_error(404, "Endpoint not found")
+
     def do_GET(self):
         # API Endpoints
         if self.path == '/api/products':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
+            self.send_json_response({"message": "Product list placeholder. Read from file if needed."}) # Re-implement reading from file if essential, or keep simple for now
+            # Restoring original product logic for compatibility
             try:
                 with open('data/products.json', 'r', encoding='utf-8') as f:
                     data = f.read()
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
                     self.wfile.write(data.encode('utf-8'))
             except Exception as e:
-                error_response = json.dumps({"error": str(e)})
-                self.wfile.write(error_response.encode('utf-8'))
+                self.send_json_response({"error": str(e)}, 500)
+            return
+
+        elif self.path == '/api/auth/me':
+            user_session = self.get_current_user()
+            if user_session:
+                self.send_json_response({"authenticated": True, "email": user_session['email']})
+            else:
+                self.send_json_response({"authenticated": False}, 401)
             return
 
         # Serve Static Files
-        # Default to index.html if path is /
         if self.path == '/':
             self.path = '/index.html'
 
@@ -45,8 +149,6 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 with open(file_path, 'rb') as f:
                     self.wfile.write(f.read())
             else:
-                # Binary fallback or let SimpleHTTPRequestHandler handle it? 
-                # Let's handle generic reading for simplicity in this custom handler
                 self.send_response(200)
                 self.end_headers()
                 with open(file_path, 'rb') as f:
@@ -59,13 +161,11 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
         print(f"[{self.log_date_time_string()}] {format%args}")
 
 if __name__ == "__main__":
-    # Ensure we are in the right directory context or using absolute paths
-    # For now, assuming script is run from root.
-    
     print(f"Vetaris Server baslatiliyor... Port: {PORT}")
     print(f"Statik dosya dizini: {DIRECTORY}")
     
-    with socketserver.TCPServer(("", PORT), VetarisHandler) as httpd:
+    # Use ThreadingTCPServer for concurrent requests
+    with ThreadingHTTPServer(("", PORT), VetarisHandler) as httpd:
         print("Sunucu calisiyor. Durdurmak icin CTRL+C basin.")
         try:
             httpd.serve_forever()

@@ -1,6 +1,22 @@
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetchProducts();
+    checkAuth();
+
+    // Only fetch products if we are on the home page (grid exists)
+    if (document.getElementById('products-grid')) {
+        fetchProducts();
+    }
+
+    // Auth Form Listeners
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
 });
 
 // Global variable for products
@@ -104,6 +120,106 @@ function openModal(product) {
     // Trigger reflow
     void modal.offsetWidth;
     modal.classList.add('active');
+}
+
+// Auth Logic
+async function checkAuth() {
+    try {
+        const response = await fetch('/api/auth/me');
+        const data = await response.json();
+
+        updateNavAuth(data.authenticated, data.email);
+    } catch (error) {
+        console.error('Auth Check Error:', error);
+    }
+}
+
+function updateNavAuth(isAuthenticated, email) {
+    const navLinks = document.querySelector('.nav-links');
+    // We assume the last link is "Giriş Yap" or "Hesabım"
+    // Let's find or create the auth link item
+    let authItem = document.getElementById('nav-auth-item');
+
+    if (!authItem) {
+        // Find existing list to append or modify
+        if (!navLinks) return; // e.g. on clean pages if any
+        authItem = document.createElement('li');
+        authItem.id = 'nav-auth-item';
+        navLinks.appendChild(authItem);
+    }
+
+    if (isAuthenticated) {
+        authItem.innerHTML = `<a href="#" onclick="handleLogout(event)">Çıkış Yap (${email})</a>`;
+    } else {
+        authItem.innerHTML = `<a href="login.html">Giriş Yap</a>`;
+    }
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            window.location.href = 'index.html';
+        } else {
+            alert('Giriş başarısız: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Login Error:', error);
+        alert('Bir hata oluştu.');
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (password !== confirmPassword) {
+        alert('Şifreler eşleşmiyor!');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Kayıt başarılı! Giriş yapabilirsiniz.');
+            window.location.href = 'login.html';
+        } else {
+            alert('Kayıt başarısız: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Register Error:', error);
+        alert('Bir hata oluştu.');
+    }
+}
+
+async function handleLogout(e) {
+    e.preventDefault();
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = 'login.html'; // or refresh index
+    } catch (error) {
+        console.error('Logout Error:', error);
+    }
 }
 
 // Mobile Menu Logic

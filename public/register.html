@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayıt Ol - Vetaris</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Vetaris Logo" class="logo">
+            </a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Ana Sayfa</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <h2>Kayıt Ol</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="email">E-posta Adresi</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Şifre</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Şifre Tekrar</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Kayıt Ol</button>
+            </form>
+            <p class="auth-footer">
+                Zaten hesabınız var mı? <a href="login.html">Giriş Yap</a>
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Vetaris. Tüm hakları saklıdır.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
