@@ -67,7 +67,7 @@ def init_db():
 def create_user(email, password):
     conn = get_db_connection()
     if not conn:
-        return None
+        raise Exception("Database connection failed")
 
     try:
         cur = conn.cursor()
@@ -85,12 +85,10 @@ def create_user(email, password):
     except psycopg2.IntegrityError:
         conn.rollback()
         conn.close()
-        print("User with this email already exists.")
-        return None
+        raise ValueError("User already exists") # Specific error for duplicate
     except Exception as e:
-        print(f"Error creating user: {e}")
         conn.close()
-        return None
+        raise Exception(f"Database error: {str(e)}")
 
 def get_user_by_email(email):
     conn = get_db_connection()

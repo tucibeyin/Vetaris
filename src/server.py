@@ -55,11 +55,18 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({"error": "Email and password required"}, 400)
                 return
 
-            user_id = database.create_user(email, password)
-            if user_id:
-                self.send_json_response({"message": "User created successfully", "user_id": user_id})
-            else:
-                self.send_json_response({"error": "User already exists or error creating user"}, 409)
+            try:
+                user = database.create_user(email, password)
+                if user:
+                    self.send_json_response({"message": "User created successfully", "user_id": user['id']})
+                else:
+                    self.send_json_response({"error": "Unknown error"}, 500)
+            except ValueError as e:
+                # User already exists
+                self.send_json_response({"error": str(e)}, 409)
+            except Exception as e:
+                # Database error
+                self.send_json_response({"error": str(e)}, 500)
             return
 
         elif self.path == '/api/auth/login':
