@@ -126,17 +126,34 @@ function renderCartItems() {
         const itemTotal = item.price * item.quantity;
         total += itemTotal;
         return `
-            <div class="cart-item" style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                <div>
+            <div class="cart-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                <div style="flex-grow: 1;">
                     <div><strong>${item.name}</strong></div>
                     <div style="font-size: 0.9em; color: #666;">${item.quantity} x ${item.price.toFixed(2)} ₺</div>
                 </div>
-                <div>${itemTotal.toFixed(2)} ₺</div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>${itemTotal.toFixed(2)} ₺</span>
+                    <span onclick="removeFromCart(${item.id})" style="cursor: pointer; color: #dc3545; font-size: 1.2rem;" title="Sil">&times;</span>
+                </div>
             </div>
         `;
     }).join('');
 
     if (totalEl) totalEl.innerText = `Toplam: ${total.toFixed(2)} ₺`;
+}
+
+function removeFromCart(productId) {
+    const itemIndex = cart.findIndex(item => item.id === productId);
+    if (itemIndex > -1) {
+        if (cart[itemIndex].quantity > 1) {
+            cart[itemIndex].quantity -= 1;
+        } else {
+            cart.splice(itemIndex, 1);
+        }
+        saveCart();
+        updateCartIcon();
+        renderCartItems();
+    }
 }
 
 function toggleCart() {

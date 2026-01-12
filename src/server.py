@@ -14,7 +14,7 @@ DIRECTORY = "public"
 database.init_db()
 
 class ThreadingHTTPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    pass
+    allow_reuse_address = True
 
 class VetarisHandler(http.server.SimpleHTTPRequestHandler):
     def parse_cookies(self):
