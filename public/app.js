@@ -136,22 +136,46 @@ async function checkAuth() {
 
 function updateNavAuth(isAuthenticated, email) {
     const navLinks = document.querySelector('.nav-links');
-    // We assume the last link is "Giriş Yap" or "Hesabım"
-    // Let's find or create the auth link item
-    let authItem = document.getElementById('nav-auth-item');
 
-    if (!authItem) {
-        // Find existing list to append or modify
-        if (!navLinks) return; // e.g. on clean pages if any
-        authItem = document.createElement('li');
-        authItem.id = 'nav-auth-item';
-        navLinks.appendChild(authItem);
-    }
+    if (!navLinks) return;
+
+    // Remove existing auth items if any
+    const existingAuthItems = navLinks.querySelectorAll('.auth-item');
+    existingAuthItems.forEach(item => item.remove());
 
     if (isAuthenticated) {
-        authItem.innerHTML = `<a href="#" onclick="handleLogout(event)">Çıkış Yap (${email})</a>`;
+        // My Account Link
+        const accountLink = document.createElement('a');
+        accountLink.href = '#'; // Placeholder for account page
+        accountLink.className = 'auth-item';
+        accountLink.innerText = 'Hesabım';
+        accountLink.onclick = (e) => {
+            e.preventDefault();
+            alert('Hesabım sayfası yapım aşamasında.');
+        };
+        navLinks.appendChild(accountLink);
+
+        // Logout Link
+        const logoutLink = document.createElement('a');
+        logoutLink.href = '#';
+        logoutLink.className = 'auth-item'; // Helper class to remove them later
+        logoutLink.innerText = 'Çıkış Yap';
+        logoutLink.onclick = handleLogout;
+        navLinks.appendChild(logoutLink);
     } else {
-        authItem.innerHTML = `<a href="login.html">Giriş Yap</a>`;
+        // Login Link
+        const loginLink = document.createElement('a');
+        loginLink.href = 'login.html';
+        loginLink.className = 'auth-item';
+        loginLink.innerText = 'Giriş Yap';
+        navLinks.appendChild(loginLink);
+
+        // Register Link
+        const registerLink = document.createElement('a');
+        registerLink.href = 'register.html';
+        registerLink.className = 'auth-item';
+        registerLink.innerText = 'Kayıt Ol';
+        navLinks.appendChild(registerLink);
     }
 }
 
