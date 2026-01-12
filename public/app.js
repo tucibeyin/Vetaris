@@ -123,14 +123,20 @@ function openModal(product) {
 }
 
 // Auth Logic
+// Auth Logic
 async function checkAuth() {
     try {
         const response = await fetch('/api/auth/me');
+        if (!response.ok) {
+            // Likely 404 if server not updated or 500
+            throw new Error('Auth verification failed');
+        }
         const data = await response.json();
-
         updateNavAuth(data.authenticated, data.email);
     } catch (error) {
         console.error('Auth Check Error:', error);
+        // Fallback: Assume not authenticated if check fails
+        updateNavAuth(false);
     }
 }
 
