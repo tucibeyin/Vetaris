@@ -146,6 +146,7 @@ a {
 .cart-icon {
     position: relative;
     cursor: pointer;
+    margin-left: 20px;
 }
 
 /* Hero Section */
