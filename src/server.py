@@ -37,11 +37,18 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         # Parse content length
-        content_length = int(self.headers['Content-Length'])
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+        except ValueError:
+            content_length = 0
+            
         post_data = self.rfile.read(content_length)
         
         try:
-            data = json.loads(post_data.decode('utf-8'))
+            if content_length > 0:
+                data = json.loads(post_data.decode('utf-8'))
+            else:
+                data = {}
         except json.JSONDecodeError:
             self.send_json_response({"error": "Invalid JSON"}, 400)
             return
