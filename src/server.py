@@ -65,7 +65,7 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 user = database.create_user(email, password)
                 if user:
-                    self.send_json_response({"message": "User created successfully", "user_id": user['id']})
+                    self.send_json_response({"message": "User created successfully", "user_id": user[0]})
                 else:
                     self.send_json_response({"error": "Unknown error"}, 500)
             except ValueError as e:
