@@ -168,7 +168,11 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
         print(f"[{self.log_date_time_string()}] {format%args}")
 
 if __name__ == "__main__":
-    print(f"Vetaris Server baslatiliyor... Port: {PORT}")
+    # Force unbuffered output for Docker/Systemd logs
+    import sys
+    sys.stdout.reconfigure(line_buffering=True)
+    
+    print(f"✅ SYSTEM: Vetaris Server baslatiliyor... Port: {PORT}")
     print(f"Statik dosya dizini: {DIRECTORY}")
     
     # Use ThreadingTCPServer for concurrent requests

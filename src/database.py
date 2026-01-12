@@ -81,13 +81,16 @@ def create_user(email, password):
         conn.commit()
         cur.close()
         conn.close()
+        print(f"✅ DB: New user created - Email: {email}, ID: {user[0]}")
         return user
     except psycopg2.IntegrityError:
         conn.rollback()
         conn.close()
-        raise ValueError("User already exists") # Specific error for duplicate
+        print(f"⚠️ DB: Duplicate registration attempt for {email}")
+        raise ValueError("User already exists") 
     except Exception as e:
         conn.close()
+        print(f"❌ DB: Error creating user {email}: {e}")
         raise Exception(f"Database error: {str(e)}")
 
 def get_user_by_email(email):
@@ -103,12 +106,13 @@ def get_user_by_email(email):
         conn.close()
         return user
     except Exception as e:
-        print(f"Error getting user: {e}")
+        print(f"❌ DB: Error getting user {email}: {e}")
         conn.close()
         return None
 
 def verify_password(stored_hash, password):
-    return bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+    result = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+    return result
 
 def create_session(user_id):
     conn = get_db_connection()
@@ -128,9 +132,10 @@ def create_session(user_id):
         conn.commit()
         cur.close()
         conn.close()
+        print(f"✅ DB: Session created for UserID: {user_id}")
         return session_id
     except Exception as e:
-        print(f"Error creating session: {e}")
+        print(f"❌ DB: Error creating session: {e}")
         conn.close()
         return None
 
