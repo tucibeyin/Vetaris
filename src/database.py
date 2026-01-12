@@ -56,6 +56,29 @@ def init_db():
                 expires_at TIMESTAMP
             );
         """)
+
+        # Create Orders Table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                total_amount DECIMAL(10, 2) NOT NULL,
+                status VARCHAR(50) DEFAULT 'Hazırlanıyor',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+
+        # Create Order Items Table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS order_items (
+                id SERIAL PRIMARY KEY,
+                order_id INTEGER REFERENCES orders(id),
+                product_id INTEGER NOT NULL,
+                product_name VARCHAR(255) NOT NULL,
+                quantity INTEGER NOT NULL,
+                price_at_purchase DECIMAL(10, 2) NOT NULL
+            );
+        """)
         
         conn.commit()
         cur.close()
@@ -65,6 +88,7 @@ def init_db():
         print(f"Error initializing database: {e}")
 
 def create_user(email, password):
+    # ... (existing code unchanged) ...
     conn = get_db_connection()
     if not conn:
         raise Exception("Database connection failed")
@@ -92,6 +116,72 @@ def create_user(email, password):
         conn.close()
         print(f"❌ DB: Error creating user {email}: {e}")
         raise Exception(f"Database error: {str(e)}")
+
+# ... (keep existing get_user_by_email, verify_password, create_session, get_session, delete_session) ...
+
+def create_order(user_id, items, total_amount):
+    conn = get_db_connection()
+    if not conn:
+        raise Exception("Database connection failed")
+
+    try:
+        cur = conn.cursor()
+        
+        # 1. Create Order
+        cur.execute(
+            "INSERT INTO orders (user_id, total_amount) VALUES (%s, %s) RETURNING id",
+            (user_id, total_amount)
+        )
+        order_id = cur.fetchone()[0]
+        
+        # 2. Insert Items
+        for item in items:
+            cur.execute("""
+                INSERT INTO order_items (order_id, product_id, product_name, quantity, price_at_purchase)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (order_id, item['id'], item['name'], item['quantity'], item['price']))
+            
+        conn.commit()
+        cur.close()
+        conn.close()
+        print(f"✅ DB: Order created - OrderID: {order_id}, UserID: {user_id}")
+        return order_id
+    except Exception as e:
+        # conn.rollback() # Context manager or explicit rollback would be better but keeping simple
+        print(f"❌ DB: Error creating order: {e}")
+        if conn: conn.close()
+        raise e
+
+def get_user_orders(user_id):
+    conn = get_db_connection()
+    if not conn:
+        return []
+
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Get Orders
+        cur.execute("""
+            SELECT * FROM orders 
+            WHERE user_id = %s 
+            ORDER BY created_at DESC
+        """, (user_id,))
+        orders = cur.fetchall()
+        
+        # For each order, get items (Not super efficient but simple)
+        for order in orders:
+            cur.execute("""
+                SELECT * FROM order_items WHERE order_id = %s
+            """, (order['id'],))
+            order['items'] = cur.fetchall()
+            
+        cur.close()
+        conn.close()
+        return orders
+    except Exception as e:
+        print(f"❌ DB: Error fetching orders: {e}")
+        if conn: conn.close()
+        return []
 
 def get_user_by_email(email):
     conn = get_db_connection()

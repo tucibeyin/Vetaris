@@ -5,6 +5,7 @@ import os
 import mimetypes
 from http import cookies
 import database  # Import our database module
+from datetime import datetime, date
 
 PORT = 8801
 DIRECTORY = "public"
@@ -33,7 +34,14 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        self.wfile.write(json.dumps(data).encode('utf-8'))
+        
+        # Helper to serialize datetime objects
+        def json_serial(obj):
+            if isinstance(obj, (datetime, date)):
+                return obj.isoformat()
+            raise TypeError ("Type %s not serializable" % type(obj))
+
+        self.wfile.write(json.dumps(data, default=json_serial).encode('utf-8'))
 
     def do_POST(self):
         # Parse content length
@@ -101,6 +109,27 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({"error": "Invalid credentials"}, 401)
             return
 
+        elif self.path == '/api/orders':
+            # Check Auth
+            user_session = self.get_current_user()
+            if not user_session:
+                self.send_json_response({"error": "Unauthorized"}, 401)
+                return
+
+            items = data.get('items')
+            total = data.get('total')
+
+            if not items or not total:
+                 self.send_json_response({"error": "Items and total required"}, 400)
+                 return
+
+            try:
+                order_id = database.create_order(user_session['user_id'], items, total)
+                self.send_json_response({"message": "Order created successfully", "order_id": order_id})
+            except Exception as e:
+                self.send_json_response({"error": str(e)}, 500)
+            return
+
         elif self.path == '/api/auth/logout':
             cookie = self.parse_cookies()
             if 'session_id' in cookie:
@@ -142,6 +171,16 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({"authenticated": True, "email": user_session['email']})
             else:
                 self.send_json_response({"authenticated": False}, 401)
+            return
+
+        elif self.path == '/api/orders':
+            user_session = self.get_current_user()
+            if not user_session:
+                self.send_json_response({"error": "Unauthorized"}, 401)
+                return
+
+            orders = database.get_user_orders(user_session['user_id'])
+            self.send_json_response(orders)
             return
 
         # Serve Static Files

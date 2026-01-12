@@ -1,8 +1,12 @@
 
+// Cart State
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
+    updateCartIcon();
 
-    // Only fetch products if we are on the home page (grid exists)
+    // Only fetch products if we are on the home page
     if (document.getElementById('products-grid')) {
         fetchProducts();
     }
@@ -17,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
     }
+
+    // Render Cart Modal Items
+    renderCartItems();
 });
 
 // Global variable for products
@@ -31,9 +38,8 @@ async function fetchProducts() {
             throw new Error('Veri çekilemedi');
         }
 
-        allProducts = await response.json(); // Store locally
+        allProducts = await response.json();
 
-        // Clear loading state
         productsGrid.innerHTML = '';
 
         allProducts.forEach(product => {
@@ -50,10 +56,8 @@ async function fetchProducts() {
 function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
-    // Make card clickable for modal (except buttons)
     card.style.cursor = 'pointer';
     card.onclick = (e) => {
-        // Sepete ekle butonuna basıldıysa modal açma
         if (!e.target.classList.contains('btn-add')) {
             openModal(product);
         }
@@ -71,39 +75,145 @@ function createProductCard(product) {
             </div>
         </div>
     `;
-
     return card;
 }
 
 function addToCart(productId) {
-    // Stop propagation handled in onclick above by checking target, but button onclick needs to function.
-    // Actually the onclick attribute usually fires first.
-    // Let's rely on event bubbling check in card.onclick
-    alert('Ürün sepete eklendi! (Demo)');
-    console.log(`Ürün ${productId} sepete eklendi`);
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    const existingItem = cart.find(item => item.id === productId);
+
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({ ...product, quantity: 1 });
+    }
+
+    saveCart();
+    updateCartIcon();
+    renderCartItems();
+
+    // Visual feedback
+    alert(`${product.name} sepete eklendi!`);
 }
 
-// Modal Logic
+function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+function updateCartIcon() {
+    const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+    const cartCountEl = document.querySelector('.cart-count');
+    if (cartCountEl) {
+        cartCountEl.innerText = count;
+    }
+}
+
+function renderCartItems() {
+    const container = document.querySelector('.cart-items');
+    const totalEl = document.querySelector('.total-price');
+    if (!container) return;
+
+    if (cart.length === 0) {
+        container.innerHTML = '<p class="empty-cart-msg">Sepetiniz boş.</p>';
+        if (totalEl) totalEl.innerText = 'Toplam: 0.00 ₺';
+        return;
+    }
+
+    let total = 0;
+    container.innerHTML = cart.map(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        return `
+            <div class="cart-item" style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                <div>
+                    <div><strong>${item.name}</strong></div>
+                    <div style="font-size: 0.9em; color: #666;">${item.quantity} x ${item.price.toFixed(2)} ₺</div>
+                </div>
+                <div>${itemTotal.toFixed(2)} ₺</div>
+            </div>
+        `;
+    }).join('');
+
+    if (totalEl) totalEl.innerText = `Toplam: ${total.toFixed(2)} ₺`;
+}
+
+function toggleCart() {
+    const modal = document.getElementById('cart-modal');
+    if (modal) {
+        modal.classList.toggle('active');
+        // Render when opening just in case
+        renderCartItems();
+    }
+}
+
+async function checkout() {
+    if (cart.length === 0) {
+        alert('Sepetiniz boş!');
+        return;
+    }
+
+    // Check auth first
+    try {
+        const authResponse = await fetch('/api/auth/me');
+        if (!authResponse.ok) {
+            // Not logged in
+            alert('Satın almak için lütfen giriş yapın.');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+        const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                items: cart,
+                total: total
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Siparişiniz başarıyla alındı! Teşekkürler.');
+            cart = [];
+            saveCart();
+            updateCartIcon();
+            renderCartItems();
+            toggleCart(); // Close modal
+            window.location.href = 'account.html';
+        } else {
+            alert('Sipariş oluşturulamadı: ' + data.error);
+        }
+
+    } catch (error) {
+        console.error('Checkout Error:', error);
+        alert('Bir hata oluştu.');
+    }
+}
+
+// Modal Logic for Product Details
 const modal = document.getElementById('product-modal');
 const closeModalBtn = document.querySelector('.close-modal');
 
 if (closeModalBtn) {
     closeModalBtn.onclick = () => {
         modal.classList.remove('active');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300); // Wait for transition
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
     };
 }
 
-window.onclick = (event) => {
-    if (event.target == modal) {
-        modal.classList.remove('active');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-    }
-};
+if (modal) {
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+    };
+}
 
 function openModal(product) {
     document.getElementById('modal-image').src = product.image;
@@ -112,63 +222,51 @@ function openModal(product) {
     document.getElementById('modal-desc').innerText = product.description;
     document.getElementById('modal-price').innerText = product.price.toFixed(2) + ' ₺';
 
-    // Setup modal button
     const modalBtn = document.getElementById('modal-add-btn');
     modalBtn.onclick = () => addToCart(product.id);
 
     modal.style.display = 'flex';
-    // Trigger reflow
     void modal.offsetWidth;
     modal.classList.add('active');
 }
 
 // Auth Logic
-// Auth Logic
 async function checkAuth() {
     try {
         const response = await fetch('/api/auth/me');
-        if (!response.ok) {
-            // Likely 404 if server not updated or 500
-            throw new Error('Auth verification failed');
-        }
         const data = await response.json();
-        updateNavAuth(data.authenticated, data.email);
+
+        if (response.ok && data.authenticated) {
+            updateNavAuth(true, data.email);
+            return true; // Return status for promises
+        } else {
+            updateNavAuth(false);
+            return false;
+        }
     } catch (error) {
         console.error('Auth Check Error:', error);
-        // Fallback: Assume not authenticated if check fails
         updateNavAuth(false);
+        return false;
     }
 }
 
 function updateNavAuth(isAuthenticated, email) {
     const navLinks = document.querySelector('.nav-links');
-
     if (!navLinks) return;
 
-    // Remove existing auth items if any
-    const existingAuthItems = navLinks.querySelectorAll('.auth-item-container');
+    const existingAuthItems = navLinks.querySelectorAll('.auth-item-container, .auth-item');
     existingAuthItems.forEach(item => item.remove());
-    // Also cleanup old individual items if any persist from cache/previous load
-    const oldItems = navLinks.querySelectorAll('.auth-item');
-    oldItems.forEach(item => item.remove());
 
-    // Create container for auth items to control positioning
     const authContainer = document.createElement('div');
     authContainer.className = 'auth-item-container auth-btn-group-start';
 
     if (isAuthenticated) {
-        // My Account Link
         const accountLink = document.createElement('a');
-        accountLink.href = '#';
+        accountLink.href = 'account.html'; // Direct link to account page
         accountLink.className = 'btn-auth-login';
         accountLink.innerText = 'Hesabım';
-        accountLink.onclick = (e) => {
-            e.preventDefault();
-            alert('Hesabım sayfası yapım aşamasında.');
-        };
         authContainer.appendChild(accountLink);
 
-        // Logout Link
         const logoutLink = document.createElement('a');
         logoutLink.href = '#';
         logoutLink.className = 'btn-auth-logout';
@@ -176,22 +274,89 @@ function updateNavAuth(isAuthenticated, email) {
         logoutLink.onclick = handleLogout;
         authContainer.appendChild(logoutLink);
     } else {
-        // Login Link
         const loginLink = document.createElement('a');
         loginLink.href = 'login.html';
         loginLink.className = 'btn-auth-login';
         loginLink.innerText = 'Giriş Yap';
         authContainer.appendChild(loginLink);
 
-        // Register Link
         const registerLink = document.createElement('a');
         registerLink.href = 'register.html';
         registerLink.className = 'btn-auth-register';
         registerLink.innerText = 'Kayıt Ol';
         authContainer.appendChild(registerLink);
     }
-
     navLinks.appendChild(authContainer);
+}
+
+// Account Page Logic
+async function loadAccountData() {
+    const emailDisplay = document.getElementById('user-email-display');
+    const initialDisplay = document.getElementById('user-initial');
+    const ordersList = document.getElementById('orders-list');
+
+    // 1. Get User Info
+    try {
+        const authResponse = await fetch('/api/auth/me');
+        if (!authResponse.ok) {
+            window.location.href = 'login.html';
+            return;
+        }
+        const authData = await authResponse.json();
+
+        if (emailDisplay) emailDisplay.innerText = authData.email;
+        if (initialDisplay) initialDisplay.innerText = authData.email.charAt(0).toUpperCase();
+
+        // 2. Get Orders
+        const ordersResponse = await fetch('/api/orders');
+        const orders = await ordersResponse.json();
+
+        if (ordersList) {
+            if (orders.length === 0) {
+                ordersList.innerHTML = '<p>Henüz bir siparişiniz bulunmuyor.</p>';
+            } else {
+                ordersList.innerHTML = orders.map(order => {
+                    const statusClass = order.status === 'Tamamlandı' ? 'status-tamamlandı' : 'status-hazırlanıyor';
+                    const date = new Date(order.created_at).toLocaleDateString('tr-TR', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+
+                    const itemsHtml = order.items.map(item => `
+                        <div class="order-item-row">
+                            <span class="item-name">${item.product_name}</span>
+                            <span>
+                                <span class="item-qty">${item.quantity}x</span>
+                                ${item.price_at_purchase.toFixed(2)} ₺
+                            </span>
+                        </div>
+                    `).join('');
+
+                    return `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div>
+                                    <div class="order-id">Sipariş #${order.id}</div>
+                                    <div class="order-date">${date}</div>
+                                </div>
+                                <span class="order-status ${statusClass}">${order.status}</span>
+                            </div>
+                            <div class="order-items-list">
+                                ${itemsHtml}
+                            </div>
+                            <div class="order-total">
+                                Toplam: ${order.total_amount.toFixed(2)} ₺
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+    } catch (error) {
+        console.error('Account Data Error:', error);
+        if (ordersList) ordersList.innerHTML = '<p class="text-danger">Bilgiler yüklenemedi.</p>';
+    }
 }
 
 async function handleLogin(e) {
@@ -205,9 +370,7 @@ async function handleLogin(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-
         const data = await response.json();
-
         if (response.ok) {
             window.location.href = 'index.html';
         } else {
@@ -236,9 +399,7 @@ async function handleRegister(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-
         const data = await response.json();
-
         if (response.ok) {
             alert('Kayıt başarılı! Giriş yapabilirsiniz.');
             window.location.href = 'login.html';
@@ -261,12 +422,10 @@ async function handleLogout(e) {
     }
 }
 
-// Mobile Menu Logic
 const hamburger = document.querySelector('.hamburger-menu');
-const navLinks = document.querySelector('.nav-links');
-
+const navLinksEl = document.querySelector('.nav-links');
 if (hamburger) {
     hamburger.onclick = () => {
-        navLinks.classList.toggle('active');
+        navLinksEl.classList.toggle('active');
     };
 }

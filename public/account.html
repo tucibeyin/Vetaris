@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesabım - Vetaris</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="index.html" class="logo">
+                <img src="images/logo.jpg" alt="Vetaris Logo" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Ana Sayfa</a>
+                <a href="index.html#products">Ürünler</a>
+                <a href="#">Hakkımızda</a>
+                <a href="#">İletişim</a>
+            </div>
+            <div class="cart-icon" onclick="toggleCart()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="account-container container">
+        <aside class="account-sidebar">
+            <div class="user-profile-summary">
+                <div class="avatar-circle">
+                    <span id="user-initial">U</span>
+                </div>
+                <h3 id="user-email-display">Yükleniyor...</h3>
+            </div>
+            <ul class="account-menu">
+                <li><a href="#" class="active" onclick="switchTab('orders')">Siparişlerim</a></li>
+                <li><a href="#" onclick="switchTab('settings')">Ayarlar</a></li>
+                <li><a href="#" onclick="handleLogout(event)" class="text-danger">Çıkış Yap</a></li>
+            </ul>
+        </aside>
+
+        <main class="account-content">
+            <div id="orders-tab" class="tab-content active">
+                <h2>Sipariş Geçmişi</h2>
+                <div id="orders-list">
+                    <!-- Orders will be loaded here -->
+                    <p class="loading-text">Siparişler yükleniyor...</p>
+                </div>
+            </div>
+
+            <div id="settings-tab" class="tab-content" style="display: none;">
+                <h2>Ayarlar</h2>
+                <p>Şifre değiştirme özellikleri yakında eklenecektir.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cart Modal (Same as index) -->
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-content">
+            <div class="cart-header">
+                <h2>Sepetim</h2>
+                <span class="close-cart" onclick="toggleCart()">&times;</span>
+            </div>
+            <div class="cart-items">
+                <!-- Items will be injected here -->
+                <p class="empty-cart-msg">Sepetiniz boş.</p>
+            </div>
+            <div class="cart-footer">
+                <div class="total-price">Toplam: 0.00 ₺</div>
+                <button class="btn-checkout" onclick="checkout()">Satın Al</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Specific logic for account page
+            checkAuth().then(() => {
+                loadAccountData();
+            });
+        });
+
+        function switchTab(tabName) {
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.account-menu a').forEach(el => el.classList.remove('active'));
+
+            // Show target
+            document.getElementById(`${tabName}-tab`).style.display = 'block';
+
+            // Activate menu item (simple logic)
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

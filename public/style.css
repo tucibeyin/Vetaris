@@ -544,6 +544,171 @@ footer p {
     font-weight: 600;
 }
 
-.auth-footer a:hover {
-    text-decoration: underline;
+
+/* Account Dashboard */
+.account-container {
+    display: flex;
+    gap: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+    min-height: 70vh;
+}
+
+.account-sidebar {
+    width: 250px;
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    height: fit-content;
+}
+
+.user-profile-summary {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.account-menu {
+    list-style: none;
+}
+
+.account-menu li {
+    margin-bottom: 0.5rem;
+}
+
+.account-menu a {
+    display: block;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    color: var(--text-main);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.account-menu a:hover,
+.account-menu a.active {
+    background-color: rgba(82, 183, 136, 0.1);
+    color: var(--primary-color);
+}
+
+.text-danger {
+    color: #e63946 !important;
+}
+
+.text-danger:hover {
+    background-color: rgba(230, 57, 70, 0.1) !important;
+}
+
+.account-content {
+    flex-grow: 1;
+}
+
+.account-content h2 {
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+/* Order History Cards */
+.order-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+    border: 1px solid transparent;
+    transition: var(--transition);
+}
+
+.order-card:hover {
+    border-color: var(--secondary-color);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.order-id {
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.order-date {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.order-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-hazırlanıyor {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-tamamlandı {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.order-items-list {
+    margin-bottom: 1rem;
+}
+
+.order-item-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.item-name {
+    color: var(--text-main);
+}
+
+.item-qty {
+    color: var(--text-light);
+    margin-right: 0.5rem;
+}
+
+.order-total {
+    text-align: right;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* Responsive Account */
+@media (max-width: 768px) {
+    .account-container {
+        flex-direction: column;
+    }
+
+    .account-sidebar {
+        width: 100%;
+    }
 }
