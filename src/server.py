@@ -151,16 +151,10 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         # API Endpoints
         if self.path == '/api/products':
-            self.send_json_response({"message": "Product list placeholder. Read from file if needed."}) # Re-implement reading from file if essential, or keep simple for now
-            # Restoring original product logic for compatibility
             try:
                 with open('data/products.json', 'r', encoding='utf-8') as f:
-                    data = f.read()
-                    self.send_response(200)
-                    self.send_header('Content-type', 'application/json')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.end_headers()
-                    self.wfile.write(data.encode('utf-8'))
+                    data = json.load(f) # Validate JSON first
+                    self.send_json_response(data)
             except Exception as e:
                 self.send_json_response({"error": str(e)}, 500)
             return

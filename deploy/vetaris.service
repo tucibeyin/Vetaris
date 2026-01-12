@@ -11,7 +11,7 @@ Group=debian
 WorkingDirectory=/var/www/vetaris.com
 
 # Python sunucusunu başlatma komutu
-ExecStart=/usr/bin/python3 src/server.py
+ExecStart=/var/www/vetaris.com/venv/bin/python3 src/server.py
 
 # Çökme durumunda otomatik yeniden başlat
 Restart=always

@@ -7,9 +7,4 @@ Could not connect to database for initialization.
 ✅ SYSTEM: Vetaris Server baslatiliyor... Port: 8801
 Statik dosya dizini: public
 Sunucu calisiyor. Durdurmak icin CTRL+C basin.
-Error connecting to database: connection to server at "localhost" (::1), port 5432 failed: Connection refused
-	Is the server running on that host and accepting TCP/IP connections?
-connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
-	Is the server running on that host and accepting TCP/IP connections?
-
-[12/Jan/2026 18:53:00] "POST /api/auth/register HTTP/1.1" 500 -
+[12/Jan/2026 19:08:19] "GET /api/products HTTP/1.1" 200 -
