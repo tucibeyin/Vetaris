@@ -35,10 +35,13 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         
-        # Helper to serialize datetime objects
+        # Helper to serialize datetime and decimal objects
+        from decimal import Decimal
         def json_serial(obj):
             if isinstance(obj, (datetime, date)):
                 return obj.isoformat()
+            if isinstance(obj, Decimal):
+                return float(obj)
             raise TypeError ("Type %s not serializable" % type(obj))
 
         self.wfile.write(json.dumps(data, default=json_serial).encode('utf-8'))
