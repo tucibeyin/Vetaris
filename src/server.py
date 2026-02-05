@@ -46,8 +46,27 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
 
         self.wfile.write(json.dumps(data, default=json_serial).encode('utf-8'))
 
+    def check_admin(self):
+        user_session = self.get_current_user()
+        if user_session and user_session.get('is_admin'):
+            return True
+        return False
+
     def do_POST(self):
-        # Parse content length
+        # Admin Upload Endpoint (Multipart) - Quick & Dirty handling
+        if self.path == '/api/upload':
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            
+            # This is a basic implementation. For production, use `cgi` or `multipart` parser
+            # But simplehttp server doesn't parse multipart automatically.
+            # We'll skip complex upload for now or assume a simpler base64 json mechanism if possible,
+            # Or just save files to distinct path if we really want multipart.
+            # Let's switch to JSON base64 for simplicity in this "no-framework" environment.
+            pass 
+
+        # Parse JSON content length
         try:
             content_length = int(self.headers.get('Content-Length', 0))
         except ValueError:
@@ -107,13 +126,16 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Set-Cookie', cookie.output(header=''))
                 
                 self.end_headers()
-                self.wfile.write(json.dumps({"message": "Login successful", "email": user['email']}).encode('utf-8'))
+                self.wfile.write(json.dumps({
+                    "message": "Login successful", 
+                    "email": user['email'],
+                    "is_admin": user.get('is_admin', False)
+                }).encode('utf-8'))
             else:
                 self.send_json_response({"error": "Invalid credentials"}, 401)
             return
 
         elif self.path == '/api/orders':
-            # Check Auth
             user_session = self.get_current_user()
             if not user_session:
                 self.send_json_response({"error": "Unauthorized"}, 401)
@@ -148,16 +170,89 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"message": "Logged out"}).encode('utf-8'))
             return
+            
+        # --- Admin Endpoints ---
+        
+        elif self.path == '/api/products': # Create Product
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            try:
+                product = database.create_product(data)
+                self.send_json_response(product, 201)
+            except Exception as e:
+                self.send_json_response({"error": str(e)}, 500)
+            return
 
+        elif self.path.startswith('/api/admin/orders/'):
+            # e.g. /api/admin/orders/5/status
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+                
+            parts = self.path.split('/')
+            if len(parts) >= 6 and parts[5] == 'status':
+                order_id = parts[4]
+                status = data.get('status')
+                if database.update_order_status(order_id, status):
+                    self.send_json_response({"success": True})
+                else:
+                     self.send_json_response({"error": "Update failed"}, 500)
+            return
+            
         self.send_error(404, "Endpoint not found")
+
+    def do_PUT(self):
+        # Parse content length
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > 0:
+                data = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            else:
+                data = {}
+        except:
+             self.send_json_response({"error": "Invalid request"}, 400)
+             return
+
+        if self.path.startswith('/api/products/'):
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            
+            product_id = self.path.split('/')[-1]
+            try:
+                updated = database.update_product(product_id, data)
+                if updated:
+                    self.send_json_response(updated)
+                else:
+                    self.send_json_response({"error": "Product not found"}, 404)
+            except Exception as e:
+                 self.send_json_response({"error": str(e)}, 500)
+            return
+
+    def do_DELETE(self):
+        if self.path.startswith('/api/products/'):
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            
+            product_id = self.path.split('/')[-1]
+            try:
+                updated = database.delete_product(product_id)
+                self.send_json_response({"success": True})
+            except Exception as e:
+                 self.send_json_response({"error": str(e)}, 500)
+            return
 
     def do_GET(self):
         # API Endpoints
         if self.path == '/api/products':
             try:
-                with open('data/products.json', 'r', encoding='utf-8') as f:
-                    data = json.load(f) # Validate JSON first
-                    self.send_json_response(data)
+                # Read from DB now
+                products = database.get_all_products()
+                # If DB is empty, maybe fallback or just return empty? 
+                # We migrated, so it should be fine.
+                self.send_json_response(products)
             except Exception as e:
                 self.send_json_response({"error": str(e)}, 500)
             return
@@ -165,7 +260,11 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path == '/api/auth/me':
             user_session = self.get_current_user()
             if user_session:
-                self.send_json_response({"authenticated": True, "email": user_session['email']})
+                self.send_json_response({
+                    "authenticated": True, 
+                    "email": user_session['email'],
+                    "is_admin": user_session.get('is_admin', False)
+                })
             else:
                 self.send_json_response({"authenticated": False}, 401)
             return
@@ -177,6 +276,14 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 return
 
             orders = database.get_user_orders(user_session['user_id'])
+            self.send_json_response(orders)
+            return
+
+        elif self.path == '/api/admin/orders':
+            if not self.check_admin():
+                 self.send_json_response({"error": "Unauthorized"}, 403)
+                 return
+            orders = database.get_all_orders()
             self.send_json_response(orders)
             return
 

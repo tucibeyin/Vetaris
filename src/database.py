@@ -43,6 +43,7 @@ def init_db():
                 id SERIAL PRIMARY KEY,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
+                is_admin BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
@@ -54,6 +55,21 @@ def init_db():
                 user_id INTEGER REFERENCES users(id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMP
+            );
+        """)
+
+        # Create Products Table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS products (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                image VARCHAR(255),
+                description TEXT,
+                category VARCHAR(100),
+                stock INTEGER DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         """)
 
@@ -80,6 +96,12 @@ def init_db():
             );
         """)
         
+        # Check/Add is_admin column if it doesn't exist (for migration)
+        try:
+            cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;")
+        except Exception as e:
+            print(f"Notice: Could not alter table (might already exist or other issue): {e}")
+
         conn.commit()
         cur.close()
         conn.close()
@@ -237,7 +259,7 @@ def get_session(session_id):
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute("""
-            SELECT s.*, u.email 
+            SELECT s.*, u.email, u.is_admin 
             FROM sessions s 
             JOIN users u ON s.user_id = u.id 
             WHERE s.session_id = %s AND s.expires_at > CURRENT_TIMESTAMP
@@ -265,3 +287,155 @@ def delete_session(session_id):
     except Exception as e:
         print(f"Error deleting session: {e}")
         conn.close()
+
+# --- Product Management ---
+
+def get_all_products(include_inactive=False):
+    conn = get_db_connection()
+    if not conn:
+        return []
+
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        query = "SELECT * FROM products"
+        if not include_inactive:
+            query += " WHERE is_active = TRUE"
+        query += " ORDER BY id ASC"
+        
+        cur.execute(query)
+        products = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Format types (Decimal to float) handled in server.py json_serial, 
+        # but good to be aware.
+        return products
+    except Exception as e:
+        print(f"Error getting products: {e}")
+        conn.close()
+        return []
+
+def get_product(product_id):
+    conn = get_db_connection()
+    if not conn:
+        return None
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+        product = cur.fetchone()
+        cur.close()
+        conn.close()
+        return product
+    except Exception as e:
+        print(f"Error getting product {product_id}: {e}")
+        conn.close()
+        return None
+
+def create_product(data):
+    conn = get_db_connection()
+    if not conn:
+        raise Exception("DB Connection failed")
+    
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            INSERT INTO products (name, price, image, description, category, stock, is_active)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, (
+            data.get('name'),
+            data.get('price'),
+            data.get('image'),
+            data.get('description', ''),
+            data.get('category', 'General'),
+            data.get('stock', 0),
+            data.get('is_active', True)
+        ))
+        product = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return product
+    except Exception as e:
+        print(f"Error creating product: {e}")
+        conn.close()
+        raise e
+
+def update_product(product_id, data):
+    conn = get_db_connection()
+    if not conn:
+        raise Exception("DB Connection failed")
+    
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Build dynamic query
+        fields = []
+        values = []
+        for key, value in data.items():
+            fields.append(f"{key} = %s")
+            values.append(value)
+        
+        if not fields:
+            return None # Nothing to update
+            
+        values.append(product_id)
+        query = f"UPDATE products SET {', '.join(fields)} WHERE id = %s RETURNING *"
+        
+        cur.execute(query, tuple(values))
+        product = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return product
+    except Exception as e:
+        print(f"Error updating product: {e}")
+        conn.close()
+        raise e
+
+def delete_product(product_id):
+    """Soft delete"""
+    return update_product(product_id, {"is_active": False})
+
+def get_all_orders():
+    """Admin: Get all orders"""
+    conn = get_db_connection()
+    if not conn: return []
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("""
+            SELECT o.*, u.email as user_email 
+            FROM orders o 
+            LEFT JOIN users u ON o.user_id = u.id 
+            ORDER BY o.created_at DESC
+        """)
+        orders = cur.fetchall()
+        
+        # Get items for each order
+        for order in orders:
+             cur.execute("SELECT * FROM order_items WHERE order_id = %s", (order['id'],))
+             order['items'] = cur.fetchall()
+             
+        cur.close()
+        conn.close()
+        return orders
+    except Exception as e:
+        print(f"Error getting all orders: {e}")
+        conn.close()
+        return []
+
+def update_order_status(order_id, status):
+    conn = get_db_connection()
+    if not conn: return None
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE orders SET status = %s WHERE id = %s", (status, order_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error updating order status: {e}")
+        conn.close()
+        return False
+
