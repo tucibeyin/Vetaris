@@ -362,8 +362,12 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/':
             self.path = '/index.html'
 
+        # Separate path from query string
+        path_parts = self.path.split('?')
+        file_path_str = path_parts[0]
+        
         # Construct full path to the file in 'public' directory
-        file_path = os.path.join(DIRECTORY, self.path.lstrip('/'))
+        file_path = os.path.join(DIRECTORY, file_path_str.lstrip('/'))
         
         # Check if file exists
         if os.path.exists(file_path) and os.path.isfile(file_path):
