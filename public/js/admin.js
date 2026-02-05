@@ -113,6 +113,7 @@ window.openEditProduct = (id) => {
     document.getElementById('pCategory').value = p.category;
     document.getElementById('pImage').value = p.image;
     document.getElementById('pDesc').value = p.description;
+    document.getElementById('pActive').checked = p.is_active;
 
     document.getElementById('productModal').style.display = 'block';
 };
@@ -146,6 +147,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         category: document.getElementById('pCategory').value,
         image: document.getElementById('pImage').value,
         description: document.getElementById('pDesc').value,
+        is_active: document.getElementById('pActive').checked
     };
 
     let res;
