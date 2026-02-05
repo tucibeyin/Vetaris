@@ -458,9 +458,12 @@ async function handleLogout(e) {
     }
 }
 
-hamburger.onclick = () => {
-    navLinksEl.classList.toggle('active');
-};
+const hamburger = document.querySelector('.hamburger-menu');
+const navLinksEl = document.querySelector('.nav-links');
+if (hamburger) {
+    hamburger.onclick = () => {
+        navLinksEl.classList.toggle('active');
+    };
 }
 
 // --- Hero Carousel Logic ---
