@@ -1,7 +1,10 @@
-from src.database import create_user, get_db_connection
+from src.database import create_user, get_db_connection, init_db
 import psycopg2
 
 def seed_admin():
+    # Ensure DB is up to date (creates tables/columns if missing)
+    init_db()
+
     email = "admin@vetaris.com"
     password = "admin" # Change this in production!
     
