@@ -14,14 +14,16 @@ async function checkAdminAuth() {
         if (!res.ok) throw new Error('Auth fetch failed');
         const data = await res.json();
 
-        if (!data.authenticated || !data.is_admin) {
+        if (!data.authenticated) {
+            window.location.href = '/login.html';
+        } else if (!data.is_admin) {
             window.location.href = '/account.html';
         } else {
             // Initial Load
             loadDashboard();
         }
     } catch (e) {
-        window.location.href = '/account.html';
+        window.location.href = '/login.html';
     }
 }
 

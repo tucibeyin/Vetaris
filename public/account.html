@@ -93,8 +93,20 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Specific logic for account page
-            checkAuth().then(() => {
-                loadAccountData();
+            checkAuth().then((isAuthenticated) => {
+                if (isAuthenticated) {
+                    loadAccountData();
+                    // Admin UI injection if we can get data from checkAuth response or re-fetch
+                    // Since checkAuth updates Nav, we can check Nav or simpler:
+                    fetch('/api/auth/me').then(r => r.json()).then(d => {
+                        if (d.is_admin) {
+                            const menu = document.querySelector('.account-menu');
+                            const adminLi = document.createElement('li');
+                            adminLi.innerHTML = '<a href="admin.html" style="color: #d63031; font-weight: bold;">Admin Paneli</a>';
+                            menu.prepend(adminLi);
+                        }
+                    });
+                }
             });
         });
 

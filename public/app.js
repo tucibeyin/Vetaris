@@ -254,7 +254,7 @@ async function checkAuth() {
         const data = await response.json();
 
         if (response.ok && data.authenticated) {
-            updateNavAuth(true, data.email);
+            updateNavAuth(true, data.email, data.is_admin);
             return true; // Return status for promises
         } else {
             updateNavAuth(false);
@@ -267,7 +267,7 @@ async function checkAuth() {
     }
 }
 
-function updateNavAuth(isAuthenticated, email) {
+function updateNavAuth(isAuthenticated, email, isAdmin) {
     const navLinks = document.querySelector('.nav-links');
     if (!navLinks) return;
 
@@ -278,6 +278,18 @@ function updateNavAuth(isAuthenticated, email) {
     authContainer.className = 'auth-item-container auth-btn-group-start';
 
     if (isAuthenticated) {
+        // Admin Link
+        if (isAdmin) {
+            const adminLink = document.createElement('a');
+            adminLink.href = 'admin.html';
+            adminLink.className = 'btn-auth-login';
+            adminLink.style.backgroundColor = '#d63031'; // Red distinct color
+            adminLink.style.color = '#fff';
+            adminLink.style.marginRight = '10px';
+            adminLink.innerText = 'Admin Paneli';
+            authContainer.appendChild(adminLink);
+        }
+
         const accountLink = document.createElement('a');
         accountLink.href = 'account.html'; // Direct link to account page
         accountLink.className = 'btn-auth-login';
