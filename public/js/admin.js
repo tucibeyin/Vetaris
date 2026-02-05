@@ -109,6 +109,7 @@ window.openEditProduct = (id) => {
     document.getElementById('productId').value = p.id;
     document.getElementById('pName').value = p.name;
     document.getElementById('pPrice').value = p.price;
+    document.getElementById('pStock').value = p.stock || 0;
     document.getElementById('pCategory').value = p.category;
     document.getElementById('pImage').value = p.image;
     document.getElementById('pDesc').value = p.description;
@@ -141,10 +142,10 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     const data = {
         name: document.getElementById('pName').value,
         price: parseFloat(document.getElementById('pPrice').value),
+        stock: parseInt(document.getElementById('pStock').value) || 0,
         category: document.getElementById('pCategory').value,
         image: document.getElementById('pImage').value,
         description: document.getElementById('pDesc').value,
-        stock: 100 // Default stock logic
     };
 
     let res;
