@@ -17,6 +17,7 @@ async function checkAdminAuth() {
         if (!data.authenticated) {
             window.location.href = '/login.html';
         } else if (!data.is_admin) {
+            alert('Bu sayfaya erişim yetkiniz yok (Admin only). Lütfen yönetici hesabıyla giriş yapın.');
             window.location.href = '/account.html';
         } else {
             // Initial Load
