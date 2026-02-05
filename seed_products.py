@@ -21,7 +21,7 @@ def seed_products():
         {
             "name": "Vetaris Formül A",
             "price": 450.00,
-            "image": "/images/formula-a.jpg",
+            "image": "/images/formula-a.png",
             "description": "Eklem sağlığı ve hareketlilik için özel formül. Glukozamin ve Kondroitin içerir.",
             "category": "Takviye",
             "stock": 100,
@@ -30,7 +30,7 @@ def seed_products():
         {
             "name": "Vetaris Formül B",
             "price": 380.00,
-            "image": "/images/formula-b.jpg",
+            "image": "/images/formula-b.png",
             "description": "Tüy ve deri sağlığı için biotin ve çinko destekli formül.",
             "category": "Bakım",
             "stock": 150,
@@ -39,7 +39,7 @@ def seed_products():
         {
             "name": "Vetaris Bakım Spreyi",
             "price": 120.00,
-            "image": "/images/spray.jpg",
+            "image": "/images/spray.png",
             "description": "Pati ve tüy temizliği için doğal içerikli bakım spreyi.",
             "category": "Hijyen",
             "stock": 200,
