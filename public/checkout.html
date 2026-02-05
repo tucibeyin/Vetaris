@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vetaris | Ödeme</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .checkout-steps {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .step-number {
+            background: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .checkout-summary {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            height: fit-content;
+        }
+
+        /* Payment Visuals */
+        .card-preview {
+            background: linear-gradient(135deg, #444, #222);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .card-number-display {
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin: 2rem 0;
+            font-family: monospace;
+        }
+
+        .hidden-step {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+
+            .checkout-summary {
+                order: -1;
+                /* Show summary first on mobile */
+            }
+        }
+
+        /* Loader Overlay */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loader-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar Minimal -->
+    <nav class="navbar" style="justify-content: center; padding: 1rem;">
+        <a href="/" class="logo">
+            <img src="/images/logo.jpg" alt="Vetaris Logo" style="height: 40px;">
+        </a>
+    </nav>
+
+    <div class="container checkout-container">
+
+        <!-- Left Column: Steps -->
+        <div class="checkout-forms">
+
+            <!-- Step 1: Address -->
+            <div id="step-address" class="checkout-steps">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Teslimat Bilgileri</div>
+                </div>
+                <form id="addressForm">
+                    <div class="form-group">
+                        <label>Ad Soyad</label>
+                        <input type="text" id="addr-name" required placeholder="Örn: Ahmet Yılmaz">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefon</label>
+                        <input type="tel" id="addr-phone" required placeholder="05XX XXX XX XX">
+                    </div>
+                    <div class="form-group">
+                        <label>Şehir</label>
+                        <select id="addr-city" required
+                            style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid #ddd;">
+                            <option value="">Seçiniz</option>
+                            <option value="İstabul">İstanbul</option>
+                            <option value="Ankara">Ankara</option>
+                            <option value="İzmir">İzmir</option>
+                            <option value="Diğer">Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tam Adres</label>
+                        <textarea id="addr-text" rows="3" required placeholder="Mahalle, Sokak, No..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary btn-block">Ödemeye Geç &#8594;</button>
+                </form>
+            </div>
+
+            <!-- Step 2: Payment -->
+            <div id="step-payment" class="checkout-steps hidden-step">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Ödeme Bilgileri</div>
+                </div>
+
+                <div class="card-preview">
+                    <div style="text-align:right; font-weight:bold; font-style:italic;">BANK</div>
+                    <div class="card-number-display" id="disp-card-num">#### #### #### ####</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span id="disp-card-name">AD SOYAD</span>
+                        <span id="disp-card-exp">MM/YY</span>
+                    </div>
+                </div>
+
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label>Kart Üzerindeki İsim</label>
+                        <input type="text" id="card-name" required placeholder="Kart sahibinin adı"
+                            oninput="updateCardDisplay()">
+                    </div>
+                    <div class="form-group">
+                        <label>Kart Numarası</label>
+                        <input type="text" id="card-num" required placeholder="0000 0000 0000 0000" maxlength="19"
+                            oninput="formatCardNum(this)">
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label>Son Kullanma (AA/YY)</label>
+                            <input type="text" id="card-exp" required placeholder="MM/YY" maxlength="5"
+                                oninput="formatCardExp(this)">
+                        </div>
+                        <div class="form-group">
+                            <label>CVC</label>
+                            <input type="text" id="card-cvc" required placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add" style="margin-bottom:1rem; width:100%;"
+                        onclick="goBackToAddress()">&#8592; Adres Bilgilerine Dön</button>
+                    <button type="submit" class="btn-primary btn-block" style="background:var(--accent-color);">Siparişi
+                        Tamamla <span id="pay-amount"></span></button>
+                </form>
+
+                <div style="margin-top:1rem; text-align:center; color:#888; font-size:0.8rem;">
+                    <i class="fas fa-lock"></i> Ödemeniz 256-bit SSL ile korunmaktadır.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Summary -->
+        <div class="checkout-summary">
+            <h3>Sipariş Özeti</h3>
+            <div id="checkout-items" style="margin: 1.5rem 0; max-height: 300px; overflow-y: auto;">
+                <!-- Items injected here -->
+            </div>
+            <div style="border-top:1px solid #eee; padding-top:1rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span>Ara Toplam</span>
+                    <span id="summary-subtotal">0.00 ₺</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span>Kargo</span>
+                    <span style="color:var(--secondary-color);">Ücretsiz</span>
+                </div>
+                <div
+                    style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:700; color:var(--primary-color);">
+                    <span>Toplam</span>
+                    <span id="summary-total">0.00 ₺</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Processing Overlay -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader-spinner"></div>
+        <h3>Ödeme İşleniyor...</h3>
+        <p>Lütfen bekleyiniz, bankanız ile iletişim kuruluyor.</p>
+    </div>
+
+    <script src="js/checkout.js"></script>
+</body>
+
+</html>
