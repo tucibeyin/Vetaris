@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let PRODUCTS = [];
 let ORDERS = [];
+let POSTS = [];
 
 // --- Auth ---
 async function checkAdminAuth() {
@@ -54,6 +55,7 @@ function setupNavigation() {
             if (page === 'dashboard') loadDashboard();
             if (page === 'products') loadProducts();
             if (page === 'orders') loadOrders();
+            if (page === 'blog') loadBlog();
         });
     });
 }
@@ -231,6 +233,104 @@ window.viewOrder = (id) => {
 
     document.getElementById('orderModal').style.display = 'block';
 };
+
+// --- Blog Logic ---
+async function fetchPosts() {
+    const res = await fetch('/api/admin/posts');
+    if (res.ok) POSTS = await res.json();
+}
+
+async function loadBlog() {
+    await fetchPosts();
+    const tbody = document.getElementById('blog-table-body');
+    tbody.innerHTML = '';
+
+    POSTS.forEach(p => {
+        const tr = document.createElement('tr');
+        const date = new Date(p.created_at).toLocaleDateString('tr-TR');
+        tr.innerHTML = `
+            <td>${p.id}</td>
+            <td>${p.title}</td>
+            <td>${date}</td>
+            <td><span class="badge ${p.is_published ? 'badge-success' : 'badge-warning'}">${p.is_published ? 'Yayında' : 'Taslak'}</span></td>
+            <td>
+                <i class="fas fa-edit action-btn" onclick="openEditPost(${p.id})"></i>
+                <i class="fas fa-trash action-btn delete-btn" onclick="deletePost(${p.id})"></i>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+document.getElementById('addPostBtn').addEventListener('click', () => {
+    document.getElementById('blogModalTitle').innerText = 'Yeni Yazı Ekle';
+    document.getElementById('blogForm').reset();
+    document.getElementById('postId').value = '';
+    document.getElementById('blogModal').style.display = 'block';
+});
+
+window.openEditPost = (id) => {
+    const p = POSTS.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('blogModalTitle').innerText = 'Yazıyı Düzenle';
+    document.getElementById('postId').value = p.id;
+    document.getElementById('postTitle').value = p.title;
+    document.getElementById('postImage').value = p.image || '';
+    document.getElementById('postSummary').value = p.summary || '';
+    document.getElementById('postContent').value = p.content || '';
+    document.getElementById('postPublished').checked = p.is_published;
+
+    document.getElementById('blogModal').style.display = 'block';
+};
+
+window.deletePost = async (id) => {
+    if (!confirm('Bu yazıyı silmek istediğinizden emin misiniz?')) return;
+
+    const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+        loadBlog();
+    } else {
+        alert('Silme başarısız');
+    }
+};
+
+document.getElementById('blogForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById('postId').value;
+    const data = {
+        title: document.getElementById('postTitle').value,
+        image: document.getElementById('postImage').value,
+        summary: document.getElementById('postSummary').value,
+        content: document.getElementById('postContent').value,
+        is_published: document.getElementById('postPublished').checked
+    };
+
+    let res;
+    if (id) {
+        // Update
+        res = await fetch(`/api/posts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } else {
+        // Create
+        res = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    }
+
+    if (res.ok) {
+        document.getElementById('blogModal').style.display = 'none';
+        loadBlog();
+    } else {
+        alert('İşlem başarısız');
+    }
+});
 
 // --- Modal Utilities ---
 function setupModals() {

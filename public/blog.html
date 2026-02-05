@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Vetaris</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="logo">Vetaris <span>.</span></div>
+            <div class="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Ana Sayfa</a>
+                <a href="index.html#products">Ürünler</a>
+                <a href="blog.html" class="active">Blog</a>
+                <a href="about.html">Hakkımızda</a>
+                <a href="contact.html">İletişim</a>
+
+                <!-- Auth Links injected by JS -->
+            </div>
+            <div class="cart-icon" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag fa-lg"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="hero" style="min-height: 40vh; padding-top: 8rem; border-radius: 0 0 50px 50px;">
+        <div class="container">
+            <h1>Blog & Haberler</h1>
+            <p>Evcil dostlarınız için faydalı bilgiler ve son gelişmeler.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-bottom: 5rem;">
+        <div id="blog-grid" class="products-grid">
+            <!-- JS will populate posts here -->
+            <p style="text-align:center; width:100%;">Yükleniyor...</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Vetaris - Tüm Hakları Saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-header">
+            <h3>Sepetim</h3>
+            <span class="close-cart" onclick="toggleCart()">&times;</span>
+        </div>
+        <div class="cart-items">
+            <!-- JS -->
+        </div>
+        <div class="cart-footer">
+            <div class="total-price">Toplam: 0.00 ₺</div>
+            <button class="btn-checkout" onclick="checkout()">Siparişi Tamamla</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Inline Blog Fetch Logic
+        document.addEventListener('DOMContentLoaded', async () => {
+            const grid = document.getElementById('blog-grid');
+            try {
+                const res = await fetch('/api/posts');
+                const posts = await res.json();
+
+                grid.innerHTML = '';
+
+                if (posts.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center; width:100%;">Henüz blog yazısı bulunmuyor.</p>';
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const date = new Date(post.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    const card = document.createElement('div');
+                    card.className = 'product-card'; // Reuse product card style for consistency
+                    card.style.cursor = 'default';
+
+                    card.innerHTML = `
+                        <img src="${post.image}" alt="${post.title}" class="product-image" style="height: 250px;">
+                        <div class="product-info" style="padding: 10px;">
+                            <span class="product-category">${date}</span>
+                            <h3 class="product-title" style="font-size: 1.4rem;">${post.title}</h3>
+                            <p class="product-desc">${post.summary || post.content.substring(0, 100) + '...'}</p>
+                            <div class="product-footer" style="border:none;">
+                                <a href="blog-detail.html?id=${post.slug}" class="btn-primary" style="width:100%; text-align:center;">Devamını Oku</a>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = '<p class="error">Yazılar yüklenirken hata oluştu.</p>';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -95,6 +95,20 @@ def init_db():
                 price_at_purchase DECIMAL(10, 2) NOT NULL
             );
         """)
+
+        # Create Blog Posts Table
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS blog_posts (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                slug VARCHAR(255) UNIQUE NOT NULL,
+                content TEXT,
+                image VARCHAR(255),
+                summary TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_published BOOLEAN DEFAULT TRUE
+            );
+        """)
         
         # Check/Add is_admin column if it doesn't exist (for migration)
         try:
@@ -436,6 +450,121 @@ def update_order_status(order_id, status):
         return True
     except Exception as e:
         print(f"Error updating order status: {e}")
+        conn.close()
+        return False
+
+# --- Blog Management ---
+
+def get_all_posts(public_only=False):
+    conn = get_db_connection()
+    if not conn: return []
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        query = "SELECT * FROM blog_posts"
+        if public_only:
+            query += " WHERE is_published = TRUE"
+        query += " ORDER BY created_at DESC"
+        cur.execute(query)
+        posts = cur.fetchall()
+        cur.close()
+        conn.close()
+        return posts
+    except Exception as e:
+        print(f"Error fetching posts: {e}")
+        conn.close()
+        return []
+
+def get_post(post_id):
+    conn = get_db_connection()
+    if not conn: return None
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        # Check if ID is int or slug
+        if str(post_id).isdigit():
+             cur.execute("SELECT * FROM blog_posts WHERE id = %s", (int(post_id),))
+        else:
+             cur.execute("SELECT * FROM blog_posts WHERE slug = %s", (post_id,))
+             
+        post = cur.fetchone()
+        cur.close()
+        conn.close()
+        return post
+    except Exception as e:
+        print(f"Error fetching post {post_id}: {e}")
+        conn.close()
+        return None
+
+def create_post(data):
+    conn = get_db_connection()
+    if not conn: return None
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        slug = data.get('title').lower().replace(' ', '-').replace('ç','c').replace('ğ','g').replace('ı','i').replace('ö','o').replace('ş','s').replace('ü','u')
+        # Simple slug deduplication could be added here
+        
+        cur.execute("""
+            INSERT INTO blog_posts (title, slug, content, image, summary, is_published)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, (
+            data.get('title'),
+            slug,
+            data.get('content'),
+            data.get('image'),
+            data.get('summary', ''),
+            data.get('is_published', True)
+        ))
+        post = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return post
+    except Exception as e:
+        print(f"Error creating post: {e}")
+        conn.close()
+        raise e
+
+def update_post(post_id, data):
+    conn = get_db_connection()
+    if not conn: return None
+    try:
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        fields = []
+        values = []
+        for key, value in data.items():
+            if key in ['title', 'content', 'image', 'summary', 'is_published']:
+                fields.append(f"{key} = %s")
+                values.append(value)
+        
+        if not fields: return None
+        
+        values.append(post_id)
+        # Safe dynamic query
+        query = f"UPDATE blog_posts SET {', '.join(fields)} WHERE id = %s RETURNING *"
+        cur.execute(query, tuple(values))
+
+        post = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return post
+    except Exception as e:
+        print(f"Error updating post: {e}")
+        conn.close()
+        raise e
+
+def delete_post(post_id):
+    conn = get_db_connection()
+    if not conn: return False
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM blog_posts WHERE id = %s", (post_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error deleting post: {e}")
         conn.close()
         return False
 

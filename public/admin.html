@@ -25,6 +25,7 @@
                 <a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-home"></i> Özet</a>
                 <a href="#" class="nav-link" data-page="products"><i class="fas fa-box"></i> Ürünler</a>
                 <a href="#" class="nav-link" data-page="orders"><i class="fas fa-shopping-cart"></i> Siparişler</a>
+                <a href="#" class="nav-link" data-page="blog"><i class="fas fa-newspaper"></i> Blog</a>
                 <a href="#" class="nav-link" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Çıkış</a>
             </nav>
         </aside>
@@ -99,6 +100,30 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Blog View -->
+                <div id="view-blog" class="admin-view hidden">
+                    <div class="page-header">
+                        <h1>Blog Yönetimi</h1>
+                        <button class="btn-primary" id="addPostBtn"><i class="fas fa-plus"></i> Yeni Yazı</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Başlık</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="blog-table-body">
+                                <!-- JS will populate -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -150,6 +175,40 @@
                 </select>
                 <button id="updateStatusBtn" class="btn-primary">Durumu Güncelle</button>
             </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Blog Modal -->
+    <div id="blogModal" class="modal">
+        <div class="modal-content admin-modal">
+            <span class="close-modal">&times;</span>
+            <h2 id="blogModalTitle">Yazı Ekle/Düzenle</h2>
+            <form id="blogForm">
+                <input type="hidden" id="postId">
+                <div class="form-group">
+                    <label>Başlık</label>
+                    <input type="text" id="postTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Resim URL</label>
+                    <input type="text" id="postImage">
+                </div>
+                <div class="form-group">
+                    <label>Özet (Kısa Açıklama)</label>
+                    <textarea id="postSummary" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>İçerik</label>
+                    <textarea id="postContent" rows="10" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="postPublished" checked> Yayında
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">Kaydet</button>
+            </form>
         </div>
     </div>
 

@@ -199,6 +199,17 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 else:
                      self.send_json_response({"error": "Update failed"}, 500)
             return
+
+        elif self.path == '/api/posts': # Create Blog Post
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            try:
+                post = database.create_post(data)
+                self.send_json_response(post, 201)
+            except Exception as e:
+                self.send_json_response({"error": str(e)}, 500)
+            return
             
         self.send_error(404, "Endpoint not found")
 
@@ -230,6 +241,22 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                  self.send_json_response({"error": str(e)}, 500)
             return
 
+        elif self.path.startswith('/api/posts/'):
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            
+            post_id = self.path.split('/')[-1]
+            try:
+                updated = database.update_post(post_id, data)
+                if updated:
+                    self.send_json_response(updated)
+                else:
+                    self.send_json_response({"error": "Post not found"}, 404)
+            except Exception as e:
+                 self.send_json_response({"error": str(e)}, 500)
+            return
+
     def do_DELETE(self):
         if self.path.startswith('/api/products/'):
             if not self.check_admin():
@@ -239,6 +266,19 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
             product_id = self.path.split('/')[-1]
             try:
                 updated = database.delete_product(product_id)
+                self.send_json_response({"success": True})
+            except Exception as e:
+                 self.send_json_response({"error": str(e)}, 500)
+            return
+
+        elif self.path.startswith('/api/posts/'):
+            if not self.check_admin():
+                self.send_json_response({"error": "Unauthorized"}, 403)
+                return
+            
+            post_id = self.path.split('/')[-1]
+            try:
+                updated = database.delete_post(post_id)
                 self.send_json_response({"success": True})
             except Exception as e:
                  self.send_json_response({"error": str(e)}, 500)
@@ -285,6 +325,37 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                  return
             orders = database.get_all_orders()
             self.send_json_response(orders)
+            return
+
+        # Blog Public Endpoints
+        elif self.path == '/api/posts':
+            try:
+                posts = database.get_all_posts(public_only=True)
+                self.send_json_response(posts)
+            except Exception as e:
+                self.send_json_response({"error": str(e)}, 500)
+            return
+            
+        elif self.path.startswith('/api/posts/'):
+            # Single Post by ID or Slug
+            post_id = self.path.split('/')[-1]
+            try:
+                post = database.get_post(post_id)
+                if post:
+                     self.send_json_response(post)
+                else:
+                     self.send_json_response({"error": "Post not found"}, 404)
+            except Exception as e:
+                self.send_json_response({"error": str(e)}, 500)
+            return
+        
+        # Admin Blog List (All posts)
+        elif self.path == '/api/admin/posts':
+            if not self.check_admin():
+                 self.send_json_response({"error": "Unauthorized"}, 403)
+                 return
+            posts = database.get_all_posts(public_only=False)
+            self.send_json_response(posts)
             return
 
         # Serve Static Files
