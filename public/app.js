@@ -172,50 +172,34 @@ function toggleCart() {
     }
 }
 
+// Checkout
 async function checkout() {
+    // Check if cart is empty
     if (cart.length === 0) {
-        alert('Sepetiniz boş!');
+        alert('Sepetiniz boş.');
         return;
     }
 
-    // Check auth first
+    // Check Auth first
     try {
-        const authResponse = await fetch('/api/auth/me');
-        if (!authResponse.ok) {
-            // Not logged in
-            alert('Satın almak için lütfen giriş yapın.');
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) {
+            alert('Lütfen önce giriş yapın.');
+            window.location.href = 'login.html';
+            return;
+        }
+        const data = await res.json();
+        if (!data.authenticated) {
+            alert('Lütfen önce giriş yapın.');
             window.location.href = 'login.html';
             return;
         }
 
-        const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+        // If authenticated, redirect to Checkout Page
+        window.location.href = 'checkout.html';
 
-        const response = await fetch('/api/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                items: cart,
-                total: total
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alert('Siparişiniz başarıyla alındı! Teşekkürler.');
-            cart = [];
-            saveCart();
-            updateCartIcon();
-            renderCartItems();
-            toggleCart(); // Close modal
-            window.location.href = 'account.html';
-        } else {
-            alert('Sipariş oluşturulamadı: ' + data.error);
-        }
-
-    } catch (error) {
-        console.error('Checkout Error:', error);
-        alert('Bir hata oluştu.');
+    } catch (e) {
+        window.location.href = 'login.html';
     }
 }
 
