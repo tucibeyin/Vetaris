@@ -67,11 +67,22 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="container">
-            <h1>Dostlarınız İçin<br>En İyi Destek</h1>
-            <p>Bilimsel formüllerle geliştirilen, veteriner onaylı destek ürünleri ile onların mutluluğuna ortak olun.
-            </p>
-            <a href="#products" class="btn-primary">Ürünleri Keşfet</a>
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1>Dostlarınız İçin<br>En İyi Destek</h1>
+                <p>Bilimsel formüllerle geliştirilen, veteriner onaylı destek ürünleri ile onların mutluluğuna ortak
+                    olun.</p>
+                <a href="#products" class="btn-primary">Ürünleri Keşfet</a>
+            </div>
+
+            <div class="hero-carousel-wrapper">
+                <button class="carousel-btn prev" onclick="slideHero(-1)">&#10094;</button>
+                <div class="hero-carousel" id="hero-carousel-track">
+                    <!-- Slides injected by JS -->
+                    <div class="hero-slide-placeholder">Yükleniyor...</div>
+                </div>
+                <button class="carousel-btn next" onclick="slideHero(1)">&#10095;</button>
+            </div>
         </div>
     </section>
 

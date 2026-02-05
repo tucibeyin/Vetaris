@@ -1,6 +1,8 @@
 
 // Cart State
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let currentHeroIndex = 0;
+let heroProducts = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
@@ -46,6 +48,11 @@ async function fetchProducts() {
             const productCard = createProductCard(product);
             productsGrid.appendChild(productCard);
         });
+
+        // Initialize Hero Carousel if we are on the homepage
+        if (document.getElementById('hero-carousel-track')) {
+            initHeroCarousel(allProducts);
+        }
 
     } catch (error) {
         console.error('Hata:', error);
@@ -451,10 +458,62 @@ async function handleLogout(e) {
     }
 }
 
-const hamburger = document.querySelector('.hamburger-menu');
-const navLinksEl = document.querySelector('.nav-links');
-if (hamburger) {
-    hamburger.onclick = () => {
-        navLinksEl.classList.toggle('active');
-    };
+hamburger.onclick = () => {
+    navLinksEl.classList.toggle('active');
+};
 }
+
+// --- Hero Carousel Logic ---
+function initHeroCarousel(products) {
+    heroProducts = products.filter(p => p.is_active); // Only show active
+    if (heroProducts.length === 0) return;
+
+    const track = document.getElementById('hero-carousel-track');
+    track.innerHTML = '';
+
+    heroProducts.forEach((p, index) => {
+        const slide = document.createElement('div');
+        slide.className = `hero-slide ${index === 0 ? 'active' : ''}`;
+        if (index === heroProducts.length - 1) slide.className += ' prev-slide'; // Prepare for wrap around visually if needed, simpler logic used below
+
+        // Reset classes for simple index logic
+        slide.className = 'hero-slide';
+        if (index === 0) slide.classList.add('active');
+
+        slide.innerHTML = `
+            <img src="${p.image}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <div class="price">${p.price} ₺</div>
+        `;
+        // Make slide clickable to go to details optionally
+        slide.onclick = () => {
+            // Redirect or open modal (using existing logic)
+            openModal(p);
+        };
+        slide.style.cursor = 'pointer';
+
+        track.appendChild(slide);
+    });
+
+    currentHeroIndex = 0;
+}
+
+function slideHero(direction) {
+    if (heroProducts.length === 0) return;
+
+    const slides = document.querySelectorAll('.hero-slide');
+
+    // Hide current
+    slides[currentHeroIndex].classList.remove('active');
+
+    // Calculate next
+    currentHeroIndex += direction;
+    if (currentHeroIndex >= heroProducts.length) currentHeroIndex = 0;
+    if (currentHeroIndex < 0) currentHeroIndex = heroProducts.length - 1;
+
+    // Show next
+    slides[currentHeroIndex].classList.add('active');
+}
+
+// Expose to window for onclick
+window.slideHero = slideHero;
