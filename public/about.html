@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hakkımızda - Vetaris</title>
+    <meta name="description" content="Vetaris hakkında bilgi edinin. Misyonumuz, değerlerimiz ve hikayemiz.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/" class="logo">
+                <img src="/images/logo.jpg" alt="Vetaris Logo" style="height: 40px; vertical-align: middle;">
+            </a>
+            <div class="hamburger-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Ana Sayfa</a>
+                <a href="index.html#products">Ürünler</a>
+                <a href="blog.html">Blog</a>
+                <a href="about.html" class="active">Hakkımızda</a>
+                <a href="contact.html">İletişim</a>
+            </div>
+            <div class="cart-icon" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag fa-lg"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="hero" style="min-height: 40vh; padding-top: 8rem; border-radius: 0 0 50px 50px;">
+        <div class="container">
+            <h1>Hakkımızda</h1>
+            <p>Evcil dostlarınıza en iyisini sunmak için buradayız.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container" style="padding-top: 4rem; padding-bottom: 5rem;">
+
+        <!-- Mission -->
+        <section style="max-width: 780px; margin: 0 auto 5rem; text-align: center;">
+            <h2 class="section-title">Misyonumuz</h2>
+            <p style="font-size: 1.1rem; color: var(--text-light); line-height: 1.9;">
+                Vetaris olarak, evcil hayvanlarınızın sağlığını ve mutluluğunu en üst düzeye taşımak için
+                çalışıyoruz. Bilimsel araştırmalar ışığında geliştirilen, veteriner onaylı ürünlerimizle
+                dostlarınızın her gününü daha sağlıklı ve enerjik kılıyoruz. Çünkü onlar, en iyisini hak ediyor.
+            </p>
+        </section>
+
+        <!-- Values -->
+        <section style="margin-bottom: 5rem;">
+            <h2 class="section-title">Değerlerimiz</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+
+                <div class="product-card" style="text-align: center; padding: 2.5rem 2rem;">
+                    <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                        <i class="fas fa-flask" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.2rem;">Bilimsel Formüller</h3>
+                    <p style="color: var(--text-light); line-height: 1.7; font-size: 0.97rem;">
+                        Her ürünümüz, uzman veterinerler ve beslenme uzmanları tarafından geliştirilen
+                        bilimsel formüllerle üretilmektedir.
+                    </p>
+                </div>
+
+                <div class="product-card" style="text-align: center; padding: 2.5rem 2rem;">
+                    <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                        <i class="fas fa-shield-alt" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.2rem;">Güvenilir Kalite</h3>
+                    <p style="color: var(--text-light); line-height: 1.7; font-size: 0.97rem;">
+                        Ürünlerimiz en yüksek kalite standartlarında üretilir ve her aşamada titizlikle
+                        denetlenir. Siz güvenin, biz üretelim.
+                    </p>
+                </div>
+
+                <div class="product-card" style="text-align: center; padding: 2.5rem 2rem;">
+                    <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                        <i class="fas fa-heart" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.2rem;">Sevgiyle Üretim</h3>
+                    <p style="color: var(--text-light); line-height: 1.7; font-size: 0.97rem;">
+                        Her ürünümüzü, evcil hayvanlarına içtenlikle bağlı kişiler olarak gerçek bir
+                        sevgi ve özenle hazırlıyoruz.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Story -->
+        <section style="background: var(--white); border-radius: var(--border-radius); padding: 3.5rem; box-shadow: var(--box-shadow); max-width: 860px; margin: 0 auto;">
+            <h2 style="color: var(--primary-color); font-size: 1.8rem; margin-bottom: 1.5rem;">Hikayemiz</h2>
+            <p style="color: var(--text-light); line-height: 1.9; font-size: 1.02rem; margin-bottom: 1.4rem;">
+                Vetaris, evcil hayvanlarına en doğal ve etkili desteği sunmak isteyen bir grup veteriner
+                ve hayvan sever tarafından kuruldu. Piyasadaki ürünlerin yetersizliğini ve şüpheli
+                içeriklerini gören ekibimiz, sıfırdan formüller geliştirerek gerçek fark yaratan ürünler
+                ortaya çıkardı.
+            </p>
+            <p style="color: var(--text-light); line-height: 1.9; font-size: 1.02rem;">
+                Bugün Vetaris, köpek ve kedi sahiplerinin güvenle tercih ettiği, veterinerler tarafından
+                önerilen bir marka haline geldi. Amacımız her zaman aynı: dostlarınızın sağlıklı,
+                mutlu ve enerjik bir yaşam sürmesine destek olmak.
+            </p>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Vetaris - Tüm Hakları Saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-header">
+            <h3>Sepetim</h3>
+            <span class="close-cart" onclick="toggleCart()">&times;</span>
+        </div>
+        <div class="cart-items">
+            <p class="empty-cart-msg">Sepetiniz boş.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="total-price">Toplam: 0.00 ₺</div>
+            <button class="btn-checkout" onclick="checkout()">Siparişi Tamamla</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
