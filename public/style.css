@@ -782,6 +782,15 @@ footer p {
     color: var(--text-main);
 }
 
+/* Modal markdown description */
+.modal-desc-md { color: var(--text-main); font-size: 0.95rem; line-height: 1.7; margin-bottom: 2rem; max-height: 220px; overflow-y: auto; }
+.modal-desc-md h2 { color: var(--primary-color); font-size: 1rem; font-weight: 700; margin: 1rem 0 0.4rem; }
+.modal-desc-md h2:first-child { margin-top: 0; }
+.modal-desc-md p { margin-bottom: 0.6rem; color: var(--text-light); }
+.modal-desc-md ul { list-style: none; padding: 0; margin: 0.3rem 0 0.8rem; }
+.modal-desc-md ul li { color: var(--text-light); padding: 0.15rem 0; }
+.modal-desc-md strong { color: var(--text-main); font-weight: 600; }
+
 /* Mobile Responsive Modal */
 @media (max-width: 768px) {
     .modal-body {

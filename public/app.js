@@ -227,8 +227,12 @@ function openModal(product) {
     document.getElementById('modal-image').src = product.image;
     document.getElementById('modal-title').innerText = product.name;
     document.getElementById('modal-category').innerText = product.category;
-    document.getElementById('modal-desc').innerText = product.description;
     document.getElementById('modal-price').innerText = product.price.toFixed(2) + ' ₺';
+
+    const descEl = document.getElementById('modal-desc');
+    descEl.innerHTML = (typeof marked !== 'undefined' && product.description)
+        ? marked.parse(product.description)
+        : (product.description || '');
 
     const modalBtn = document.getElementById('modal-add-btn');
     modalBtn.onclick = () => addToCart(product.id);
