@@ -308,6 +308,18 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json_response({"error": str(e)}, 500)
             return
 
+        elif clean_path.startswith('/api/products/'):
+            product_id = clean_path.split('/')[-1]
+            try:
+                product = database.get_product(product_id)
+                if product:
+                    self.send_json_response(product)
+                else:
+                    self.send_json_response({"error": "Product not found"}, 404)
+            except Exception as e:
+                self.send_json_response({"error": str(e)}, 500)
+            return
+
         elif clean_path == '/api/auth/me':
             user_session = self.get_current_user()
             if user_session:

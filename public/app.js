@@ -233,6 +233,9 @@ function openModal(product) {
     const modalBtn = document.getElementById('modal-add-btn');
     modalBtn.onclick = () => addToCart(product.id);
 
+    const viewBtn = document.getElementById('modal-view-btn');
+    if (viewBtn) viewBtn.href = `product.html?id=${product.id}`;
+
     modal.style.display = 'flex';
     void modal.offsetWidth;
     modal.classList.add('active');
