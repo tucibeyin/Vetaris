@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         .product-detail-section {
             padding: 4rem 0 6rem;
@@ -68,6 +69,64 @@
             line-height: 1.8;
             border-top: 1px solid #eee;
             padding-top: 1.2rem;
+        }
+
+        /* Markdown rendered content */
+        .product-detail-desc h2 {
+            color: var(--primary-color);
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 1.6rem 0 0.7rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid rgba(56, 124, 68, 0.12);
+        }
+
+        .product-detail-desc h2:first-child {
+            margin-top: 0;
+        }
+
+        .product-detail-desc h3 {
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.2rem 0 0.5rem;
+        }
+
+        .product-detail-desc p {
+            margin-bottom: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .product-detail-desc ul,
+        .product-detail-desc ol {
+            padding-left: 0;
+            margin: 0.4rem 0 1rem;
+            list-style: none;
+        }
+
+        .product-detail-desc ul li,
+        .product-detail-desc ol li {
+            color: var(--text-light);
+            padding: 0.25rem 0 0.25rem 0.2rem;
+            line-height: 1.7;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .product-detail-desc ul li:last-child,
+        .product-detail-desc ol li:last-child {
+            border-bottom: none;
+        }
+
+        .product-detail-desc strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .product-detail-desc hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 1.2rem 0;
         }
 
         .product-detail-stock {
@@ -270,6 +329,8 @@
 
     <script src="app.js"></script>
     <script>
+        marked.use({ breaks: true });
+
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);
             const productId = params.get('id');
@@ -301,7 +362,10 @@
                 document.getElementById('product-name').innerText = product.name;
                 document.getElementById('product-category').innerText = product.category;
                 document.getElementById('product-price').innerText = product.price.toFixed(2) + ' ₺';
-                document.getElementById('product-description').innerText = product.description;
+
+                // Render description as Markdown
+                const descEl = document.getElementById('product-description');
+                descEl.innerHTML = product.description ? marked.parse(product.description) : '';
 
                 // Stock badge
                 const stockEl = document.getElementById('product-stock');
