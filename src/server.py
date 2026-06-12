@@ -4,7 +4,7 @@ import json
 import os
 import mimetypes
 from http import cookies
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 import database  # Import our database module
 from datetime import datetime, date
 
@@ -390,8 +390,8 @@ class VetarisHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         # Serve Static Files
-        # UTM ve diğer sorgu parametrelerinden arındırılmış clean_path kullanılıyor
         file_path_str = clean_path if clean_path != '/' else '/index.html'
+        file_path_str = unquote(file_path_str)  # %C3%9C → Ü gibi Türkçe karakter çözümlemesi
 
         # Construct full path to the file in 'public' directory
         file_path = os.path.join(DIRECTORY, file_path_str.lstrip('/'))
