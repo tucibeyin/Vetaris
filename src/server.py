@@ -11,6 +11,14 @@ from datetime import datetime, date
 PORT = 8801
 DIRECTORY = "public"
 
+# Ensure common MIME types are registered on minimal Linux installs
+mimetypes.add_type('image/jpeg', '.jpg')
+mimetypes.add_type('image/jpeg', '.jpeg')
+mimetypes.add_type('image/png', '.png')
+mimetypes.add_type('image/webp', '.webp')
+mimetypes.add_type('image/gif', '.gif')
+mimetypes.add_type('image/svg+xml', '.svg')
+
 # Initialize Database
 database.init_db()
 
